@@ -204,7 +204,7 @@
       # iv. dataOrigin
       simple.BIEN.dataset$dataOrigin <- "BIEN"
         
-      # v. If your sample unit is species uncomment the following line (207) and run it. 
+      # v. If your sample unit is species uncomment the following line (209) and run it. 
 	    # This function creates a column to include the name of the Genus in a separate column. # See Note 9 in the manuscript
       # simple.BIEN.dataset <- simple.BIEN.dataset %>% separate(scrubbed_species_binomial, c("scrubbed_genus","temp_spp"),sep= " ", remove=FALSE)
         
@@ -223,7 +223,7 @@
   # Rename the columns of GBIF and BIEN
   colnames.matched <- c("ID_Originin","Data_Origin","Basis_of_Record","Genus","Spp","Scientific_name","Longitude","Latitude","Elevation",
                         "Country_Name","Country_ISOcode","Locality","Date","Institution_code","Collection_code","Catalog_number")
-  colnames(simple.GBIF.dataset) <- colnames.matched # If there are no records in "raw.BIEN.dataset", then run only this line, skip line 225 and go to line 229. See Note 10 in the manuscript
+  colnames(simple.GBIF.dataset) <- colnames.matched # If there are no records in "raw.BIEN.dataset", then run only this line, skip line 227 and go to line 231. See Note 10 in the manuscript
   colnames(simple.BIEN.dataset) <- colnames.matched
       
   # 4. Merge matched.GBIF.dataset and matched.BIEN.dataset. 
@@ -238,7 +238,7 @@
 # because it might be possible that the records gathered in BIEN and GBIF do not accurately 
 # reflect the distribution range of your case study
 # and you may need to complete the merge.dataset with records comming from other sources. 
-# If you want to run this part of the code uncomment lines 242-251
+# If you want to run this part of the code uncomment lines 244-253
   
   # 1. For online databases we use spocc R package that allows downloading records from multiple online databases aside from (including GBIF) 
   # library(spocc)
@@ -255,11 +255,11 @@
   # The separator for latitude and longitude columns must be a period. See Note 11 in the manuscript
       
 #### G. CHECK THE DATASET ####
-  # 1. If new occurrences have been manually added in excel (F-2) then you need to uncomment line 257 to import the csv created in step F-2. 
+  # 1. If new occurrences have been manually added in excel (F-2) then you need to uncomment line 259 to import the csv created in step F-2. 
   # merged.dataset.2 <- read.csv(paste0(path.input,"merged_dataset_Version2.csv"),sep=";",dec=".")
   # merged.dataset.2 <- read.csv(paste0(path.input,"merged_dataset_Version2.csv"),sep=",",dec=".") # if you have different separators (not comma nor semicolons), then indicate the type of separator in sep=""
   
-  # 2. Visualize the dataset (merged.dataset or merged.dataset.2 if you run line 256) 
+  # 2. Visualize the dataset (merged.dataset or merged.dataset.2 if you run line 259) 
   # This is done to check that the dataset meets the criteria needed to run the following part of the protocol
   
   # Visualize
@@ -318,7 +318,7 @@
       # Extract all values of shape.level3TDWG for each record in your dataset (filtered.data)
       values.shape <- extract(shape.level3TDWG,filtered.data.spatial) # If a warning may appear, it does not affect the result. See Note 13 in the manuscript
         
-      # Replace the values extracted in line 317 to the level-3 TDWG codes and convert the spatial object into a dataframe
+      # Replace the values extracted in line 319 to the level-3 TDWG codes and convert the spatial object into a dataframe
       Country_TDWGcode <- as.character(values.shape$LEVEL3_COD)
       filtered.data.TDWG<-cbind.data.frame(filtered.data.spatial,Country_TDWGcode) 
         
@@ -438,7 +438,7 @@
     # Case 1. The sampling bias in your dataset does not affect the majority of sample units (thus, you did not run step J-1-a) 
     # but you need to do the thinning in the sample unit for which you have detected a spatial bias
     # Case 2. You did perform step J-1-a, but there is still one of the sample units that suffer from spatial bias
-    # In any of the two cases, uncomment lines 442-446 and run them to apply the thinning to the given sample unit.
+    # In any of the two cases, uncomment lines 444-449 and run them to apply the thinning to the given sample unit.
     # If you are in case 1, you need to adapt the buffer to your geographical scale (see manuscript step-J).
     # If you are in case 2, you need to increase the buffer in relation to the one you used in step J-1-a (see manuscript step-J).
     # 
@@ -492,7 +492,7 @@
     # If the number of rows do not match, it is possible that joining the two tables may generate duplicates. Uncomment next line 491. See Note 18 in manuscript.
     # joined.dataset<-joined.dataset[!duplicated(joined.dataset[,c("Genus","Longitude","Latitude")]),] # If your sample unit is species, then replaced $Genus by $Spp 
     # this remove possible duplicates generated when merging the "joined.dataset" and "thin.occ"
-    # once run line 491, that the number of rows of "thin.occ" and "joined.dataset" are the same
+    # once run line 493, that the number of rows of "thin.occ" and "joined.dataset" are the same
     # Check that "joined.dataset" contains the columns of "filtered.dataset.WCSP"
     
     # b. Join columns of one taxon thinned and the rest of taxa
@@ -515,10 +515,10 @@
     # joined.dataset.1taxon<- dt2[dt1] 
 	  #
     # Check that the number of rows of "thin.taxon" and "joined.dataset.1taxon" is the same 
-    # If the number of rows do not match, uncomment next line 517. See Note 18 in the manuscript
+    # If the number of rows do not match, uncomment next line 519. See Note 18 in the manuscript
     # joined.dataset.1taxon<-joined.dataset.1taxon[!duplicated(joined.dataset.1taxon[,c("Genus","Longitude","Latitude")]),] # If your sample unit is species, then replaced $Genus by $Spp 
     # this remove possible duplicates generated when merging the "joined.dataset" and "thin.occ"
-    # once run line 517, that the number of rows of "thin.occ" and "joined.dataset" are the same
+    # once run line 519, that the number of rows of "thin.occ" and "joined.dataset" are the same
     # Check that "joined.dataset" contains all columns in "filtered.dataset.WCSP"
   
     # # Add joined.dataset.1taxon to the rest of taxa
@@ -537,7 +537,7 @@
     # b. Rename bioclimatic variables 1 to 9 (see manuscript K-a)
     # c. Import climatic variables from Alternative 1 of 30 seconds resolution
     path.clim <- "C:/Users/User/Documents/input/Bioclimatic _variables_WC2/"
-	  # If using iOS the path will be written as this (uncomment line 539):
+	  # If using iOS the path will be written as this (uncomment line 541):
     # path.clim <- "/Users/User/Documents/input/Bioclimatic _variables_WC2/"
 	  files.clim <- list.files(path.clim,pattern="*.tif", full.names = TRUE) # Check that there are 19 files
     library(raster) 
@@ -605,7 +605,7 @@
   dist <- 1000 
     
   # Plot occurrences outside layer limits (NA values) and save
-  # If you want to extract these maps, uncomment lines 608 and 611
+  # If you want to extract these maps, uncomment lines 610 and 613
   # If occurrences outside limits are not obtained, go to step M-1. See Note 20 in the manuscript
   # pdf(file=paste0(path.output,"7_points_outside.pdf"), width = 8,height = 8) 
   plot(bioclim[[1]],col=colfunc(10),legend = FALSE,  main="Ocurrences outside limits")
@@ -660,7 +660,7 @@
 #### M. EXTRACT CLIMATIC DATA ####
   # 1. Convert joined.dataset to spatial object. 
   col.coord.corrected <- c("LongitudeCorrected","LatitudeCorrected") 
-  # Uncomment line 662  if Note 20 applies to your case 
+  # Uncomment line 664  if Note 20 applies to your case 
   # col.coord.corrected <- c("Longitude","Latitude") 
   coordinates(joined.dataset)<-col.coord.corrected
   projection(joined.dataset) <- crs("+proj=longlat +datum=WGS84") # Select WGS84 projection
