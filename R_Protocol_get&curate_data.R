@@ -4,10 +4,12 @@
 
 #####################################################################################
 # Authors:  Marina Coca-de-la-Iglesia, Nagore G. Medina, Virginia Valcárcel
-# Date: 08/03/2022
+# Date: 10/11/2022
+# GitHub
 
 # PROTOCOL USED TO ELABORATE FOLLOWING PUBLICATIONS:
-# PAPER: Marina Coca de la Iglesia, Nagore G. Medina, Jun Wen, Virginia Valcárcel (2022). Tropical-temperate dichotomy falls apart in the Asian Palmate Group of Araliaceae. bioRxiv 2021.10.20.465102; doi: https://doi.org/10.1101/2021.10.20.465102
+# PAPER pre-print: Marina Coca de la Iglesia, Nagore G. Medina, Jun Wen, Virginia Valcárcel (2022). Tropical-temperate dichotomy falls apart in the Asian Palmate Group of Araliaceae. bioRxiv 2021.10.20.465102; doi: https://doi.org/10.1101/2021.10.20.465102
+# PAPER: Coca-de-la-Iglesia, M., Medina, N. G., Wen, J., and Valcárcel, V. 2022. Evaluation of tropical–temperate transitions: an example of climatic characterization in the Asian Palmate group of Araliaceae. American Journal of Botany 109( 9): 1488– 1507. https://doi.org/10.1002/ajb2.16059
 # DATABASE: Coca de la Iglesia, Marina, Medina, Nagore G., Wen, Jun, & Valcárcel, Virginia. (2021). Spatial and climatic worldwide database of the Asian Palmate Group of Araliaceae (1.0.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.5578149
 
 ###############################################
