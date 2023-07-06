@@ -12,6 +12,12 @@
 # PAPER: Coca-de-la-Iglesia, M., Medina, N. G., Wen, J., and Valcárcel, V. 2022. Evaluation of tropical–temperate transitions: an example of climatic characterization in the Asian Palmate group of Araliaceae. American Journal of Botany 109( 9): 1488– 1507. https://doi.org/10.1002/ajb2.16059
 # DATABASE: Coca de la Iglesia, Marina, Medina, Nagore G., Wen, Jun, & Valcárcel, Virginia. (2021). Spatial and climatic worldwide database of the Asian Palmate Group of Araliaceae (1.0.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.5578149
 
+# PROTOCOL RUN ENTIRELY IN THE FOLLOWING OPERATING SYSTEMS AND VERSIONS OF R AND RStudio:
+# MacOS Monterey v12.6.7. (Intel & Silicon M1) / R v4.3.1 / Rstudio 2023.06.0+421
+# Windows® 10 education / R v4.1.2 / Rstudio 2022.12.00
+# Kubuntu 22.04 / R v4.3.0 / Rstudio 2023.06.0
+
+
 ###############################################
 #               STEPS PROCEDURE
 ###############################################
@@ -22,36 +28,59 @@
   # https://www.gbif.org/
 
 #### C.  INITIAL PREPARATION ####
-  # 2. Create the paths for the input data and the output of results 
-  # path.input  is the folder that contains the checklist and name list
-  path.input <- "C:/Users/User/Documents/input/" # Replace the example path with the path of the input folder in your computer.
-  # If using iOS the path will be written as this.
-  # path.input <- "/Users/User/Documents/input/" # Replace the example path with the path of the input folder in your computer.
+  # 2. Set the paths for the input data and the output of results 
+
+  # run getwd() to check the working directory
+  # To change the working directory uncomment the following line
+  # and replace path with the path of the main folder in your computer.
+  # setwd("C:/Users/User/Documents/") 
   
-  # Select path.input as working directory
-  setwd(path.input)
+  if(!dir.exists("input")){dir.create("input")}
+  path.input <- paste0(getwd(), "/input/")
   
   # path.output is the folder with the results of R code
-  path.output <- "C:/Users/User/Documents/output/" # Replace the example path with the path of the input folder in your computer.
-  # If using iOS the path will be written as this.
-  # path.output <- "/Users/User/Documents/output/"
   
-  # 3. Install R packages (run only the first time, after that comment these lines)
+  # Otherwise you can create the output forlder in the working directory (works with any OS)
+  if(!dir.exists("output")){dir.create("output")}
+  path.output <- paste0(getwd(), "/output/")
+  
+  
+  # 3a. Install R packages (run only the first time, after that comment these lines)
   install.packages("BIEN")          # Functions used: BIEN_occurrence_genus()
   install.packages("countrycode")   # Functions used: countrycode()
   install.packages("data.table")    # Functions used: data.table()
-  install.packages("devtools")      # Functions used: install_github()
   install.packages("dplyr")         # Functions used: sapply(), filter(), select()
   install.packages("plyr")          # Functions used: ldply()
+  install.packages("sf")            # Functions used: st_read()
   install.packages("raster")        # Functions used: crs(), getData(),crop()
   install.packages("readr")         # Functions used: readLines()
   install.packages("rgbif")         # Functions used: occ_search()
   install.packages("rgdal")         # Functions used: readOGR()
   install.packages("spocc")         # Functions used: occ()
   install.packages("spThin")        # Functions used: thin()
-  devtools::install_github("SEEG-Oxford/seegSDM")   # Functions used: nearestLand()
-  install.packages("tidyr")			# Functions used: separate()
-    
+  install.packages("remotes")       # Functions used: install_github(). Alternatively you can install library "devtools" 
+  install.packages("tidyr")			    # Functions used: separate()
+  remotes::install_github("SEEG-Oxford/seegSDM")   # Functions used: nearestLand(). Alternativerly you can use devtoosl::install_github("SEEG-Oxford/seegSDM")
+  remotes::install_github("barnabywalker/kewr")    # Functions used: search_ipni(). Alternativerly you can use devtoosl::install_github("barnabywalker/kewr")
+  
+  # 3b. Load R packages
+  library(BIEN)          # Functions used: BIEN_occurrence_genus()
+  library(countrycode)   # Functions used: countrycode()
+  library(data.table)    # Functions used: data.table()
+  library(dplyr)         # Functions used: sapply(), filter(), select()
+  library(plyr)          # Functions used: ldply()
+  library(sf)            # Functions used: st_read()
+  library(raster)        # Functions used: crs(), getData(),crop()
+  library(readr)         # Functions used: readLines()
+  library(rgbif)         # Functions used: occ_search()
+  library(rgdal)         # Functions used: readOGR()
+  library(spocc)         # Functions used: occ()
+  library(spThin)        # Functions used: thin()
+  library(remotes)       # Functions used: install_github(). Alternatively you can call library devtools
+  library(seegSDM)       # Functions used: nearestLand()
+  library(tidyr)         # Functions used: separate()
+  library(kewr)          # Functions used: search_ipni()
+  
   # 4. Read names list or create names list. For this protocol, we used the "Alternative 2".
   # Notice that names of taxa must match those included in the "Natural_Distribution_Checklist_TDWG.txt" file
   # and must be arranged in the same order as in the "Natural_Distribution_Checklist_TDWG.txt" file.
@@ -61,15 +90,77 @@
   #               "Sinopanax","Tetrapanax","Trevesia")
 
   # "Alternative 2":
-  library(readr)
-  taxa.names <-  sort(readLines(paste0(path.input, "namelist.csv"))) 
+  # read the file from your computer
+  # taxa.names <-  sort(readLines(paste0(path.input, "namelist.csv"))) 
+  
+  # "Alternative 3":
+  # read the file from the github page
+  taxa.names <- sort(readLines("https://raw.githubusercontent.com/NiDEvA/R-protocols/main/namelist.csv"))
     
   # 5. Read the checklist of taxa native range built in step A. 
+  
   # Load the checklist in R as vector
-  checklist <-  readLines(paste0(path.input,"Natural_Distribution_Checklist_TDWG.txt"))
-    
+  # "Alternative 1":
+  # read the file from your computer
+  # checklist <-  readLines(paste0(path.input,"Natural_Distribution_Checklist_TDWG.txt"))
   # Convert the vector into a list. 
-  checklist <- strsplit(checklist,";") # The first character of item is the name of genus, then there are the country codes
+  # checklist <- strsplit(checklist,";") # The first character of item is the name of genus, then there are the country codes
+  
+  # "Alternative 2":
+  # As an example, we provide the code to retrieve the native ranges of the genera from POWO
+  # using the library kewr
+  
+  # CAUTION: Please note that only a few families are listed in POWO, so it is often necessary to create the checklist manually 
+  # by referring to national checklists see step A
+  
+  # Retrieve taxonomic information from IPNI for each taxon name in the list
+  # The function search_ipni() is used with the filter set to "genera"
+  taxa_ipni <- lapply(taxa.names, search_ipni, filters = "genera")
+  
+  # Extract the taxonomic IDs from the IPNI search results
+  taxa_id <- lapply(taxa_ipni, tidy)
+
+  # Select the taxonomic ID codes that are in POWO
+  # CAUTION: The database of distributions in POWO may not have complete data. Missing data is common.
+  # If a taxon is missing, the code will return NA. In such cases, the distributions
+  # need to be checked manually
+  taxa_id <- lapply(taxa_id, dplyr::filter, inPowo == TRUE)
+  
+  # check if there is any missing taxa
+  length(taxa_id) == length(taxa.names)
+  
+  taxa_id <- lapply(taxa_id, dplyr::select, "id") # Extract the taxonomic IDs from the retrieved data
+  
+  # Retrieve additional information from Plants of the World Online (POWO) for each taxonomic ID
+  # The function lookup_powo() is used with the parameter distribution set to TRUE
+  record <- lapply(taxa_id, function(id) {
+    print(id) # Print the taxonomic ID for reference
+    
+    # Try to retrieve information from POWO using the taxonomic ID
+    # If an error occurs during the retrieval, assign NA (missing value) to the record
+    tryCatch(
+      lookup_powo(id, distribution = TRUE),
+      error = function(e) NA
+    )
+  })
+  
+  # Tidy up the retrieved records
+  tidied <- lapply(record, tidy)
+  
+  # Create a list of genus and distribution data for native species
+  list <- lapply(tidied, function(t) {
+    t %>%
+      dplyr::select(genus, distribution) %>%
+      tidyr::unnest(cols = distribution) %>% 
+      tidyr::unnest(cols = natives) %>%
+      dplyr::filter(establishment == "Native")
+  })
+  
+  # Create a checklist by combining unique genus names and TDWG codes
+  checklist <- lapply(list, function(l) {
+    checkl <- c(unique(l$genus), l$tdwgCode)
+  })
+  
     
 #### D. DOWNLOAD DATA ####
   # 1. Records from GBIF (https://www.gbif.org/)
@@ -79,7 +170,7 @@
     email <- "XX" # your email 
       
     # b. Search the taxon keys of each taxon
-    library(rgbif)
+    # using the library rgbif
     taxon.keys <- sapply(taxa.names,function(x) name_backbone(x, rank="genus")$usageKey) # in this example, the sample units are "genus"
     # If your sample unit is not genus, then you need to replace rank="genus" 
     # by rank="species"or rank="family"
@@ -105,11 +196,17 @@
                                     pred_not(pred("establishmentMeans","INVASIVE")), # Discard INVASIVE establishment means of a taxon
                                     pred_not(pred("establishmentMeans","MANAGED")), # Discard MANAGED establishment means of a taxon
                                     pred_not(pred("establishmentMeans","NATURALISED")), # Discard NATURALISED establishment means of a taxon
-                                    user = user,pwd = pwd,email =email,format="SIMPLE_CSV")
+                                    user = user, pwd = pwd, email = email, format = "SIMPLE_CSV")
         
       
-      # This function allows to identify when the download is finished "Succeeded" and provides you with a GBIF reference of the donwload
+      # The download may take some time. You can use this function to check the status of the download 
+      # Once the download is finished "status: Succeeded. Download is done" the function provides you with the "status: Succeeded. Download is done" message and a GBIF reference of the download
       occ_download_wait(gbif.download) 
+      # Do not worry if a bit after retrieving the "status: running" message, you recovered the following error:
+      # Error in curl::curl_fetch_memory(x$url$url, handle = x$url$handle) : 
+      # HTTP/2 stream 7 was not closed cleanly before end of the underlying stream
+      # the download is still running. You just have to wait (dowload can take time) and run the function in line 198 again. When the download is finished
+      # you will recover the "status: succeeded" message
       
       # The object gbif.download.key allows you to keep the GBIF reference of the donwload
       gbif.download.key <- as.character(gbif.download)
@@ -117,6 +214,7 @@
       # Download as many zip files to the "download_GBIF" folder as the number of taxa specified in L98  
       occ_get <- occ_download_get(key=gbif.download.key,path = path.download.gbif, overwrite = TRUE) 
 	    # once the download is finished check in "download_GBIF" folder that there is a zip file named "gbif.download.key". See Note 4 in the manuscript
+      list.files()
       
       # Import to R all zip files downloaded from GBIF
       raw.GBIF.dataset <- occ_download_import(occ_get)
@@ -124,8 +222,8 @@
   # 2. Records from BIEN (https://bien.nceas.ucsb.edu/bien/)
   raw.BIEN.dataset <- list()
       
-  # Download BIEN occurrences for each element of taxa.names
-  library(BIEN)
+  # Download BIEN occurrences for each element of taxa.names. This step may take some time
+  # using the library BIEN
   for (i in 1:n.spp ){
     # Name of taxa
     x <-taxa.names[i]
@@ -161,7 +259,7 @@
       
     # a. Create new columns for further merging simple.GBIF.dataset and simple.BIEN.dataset
       # i. Country names column from 2-letter ISO 3166-1 to country name
-      library(countrycode)
+      # using the library countrycode
       simple.GBIF.dataset$countryName<- countrycode(simple.GBIF.dataset$countryCode, origin = "iso2c", destination = "country.name") 
 	    # Do not worry if the following warning appears 'Some values were not matched unambiguously:  , ZZ'. 
 	    # See Note 7 in the manuscript. The records with ZZ and empty values in ISO code will have NAs in the “countryName” column.
@@ -175,7 +273,6 @@
                          "countryName","countryCode","locality","eventDate","institutionCode","collectionCode","catalogNumber")
         
     # Simplify dataframe by keeping only useful columns
-    library(dplyr)
     simple.GBIF.dataset <- dplyr::select(simple.GBIF.dataset,all_of(useful.col.GBIF)) 
     
     # c. Export data.frame as csv file
@@ -241,7 +338,7 @@
 # If you want to run this part of the code uncomment lines 244-253
   
   # 1. For online databases we use spocc R package that allows downloading records from multiple online databases aside from (including GBIF) 
-  # library(spocc)
+  # using the library spocc
   # raw.spocc.dataset <- list()
   # for (i in 1:length(taxa.names) ){
   #   # Name of taxa
@@ -276,37 +373,35 @@
   
 #### H. DATA CLEANING ####
   # 1. Remove the records that lack coordinates (common in BIEN)
-  filtered.data<-merged.dataset[!(is.na(merged.dataset$Longitude) & is.na(merged.dataset$Latitude)),] # If new occurrences have been manually added in excel (F-2), then replace merged.dataset by merged.dataset.2. See Note 12 in the manuscript
+  filtered.data <- merged.dataset[!(is.na(merged.dataset$Longitude) & is.na(merged.dataset$Latitude)),] # If new occurrences have been manually added in excel (F-2), then replace merged.dataset by merged.dataset.2. See Note 12 in the manuscript
     
   # 2. Remove the records with invalid coordinates (Lon or Lat = 0) (common in GBIF)
-  filtered.data<-filtered.data[!(filtered.data$Longitude==0 & filtered.data$Latitude==0),]
+  filtered.data <- filtered.data[!(filtered.data$Longitude==0 & filtered.data$Latitude==0),]
     
-  # 3. Remove the records with coordinates < 2 decimals. 
-  # For our geographical scale (world) and the ultimate gold (climatic characterization of sample units), two decimals are enough precission.
+  # 3. Remove the records with coordinates < 2 decimal places. 
+  # For our geographical scale (world) and the ultimate gold (climatic characterization of sample units), two decimals are enough precision.
   # If your geographical scale is different or you need more precission, you can modified it as needed.
-  filtered.data <- filtered.data[grep("\\.[0-9][0-9]", filtered.data$Longitude), ] 
+  filtered.data <- filtered.data[grep("\\.[0-9]", filtered.data$Longitude), ] 
   
   # If you want to keep only records with three decimals, then replace "\\.[0-9][0-9]" by "\\.[0-9][0-9][0-9]";
   # Alternatively, if you one decimal is enough to your purpose, then replace replace "\\.[0-9][0-9]" by "\\.[0-9]"
   
-  filtered.data <- filtered.data[grep("\\.[0-9][0-9]", filtered.data$Latitude), ] 
-  # If you want to keep only records with three decimals, then replace "\\.[0-9][0-9]" by "\\.[0-9][0-9][0-9]";
+  filtered.data <- filtered.data[grep("\\.[0-9]", filtered.data$Latitude), ] 
+  # If you want to keep only records with three decimals, then replace "//.[0-9][0-9]" by "\\.[0-9][0-9][0-9]";
   # Alternatively, if you one decimal is enough to your purpose, then replace replace "\\.[0-9][0-9]" by "\\.[0-9]"
     
   # 4. Remove replicated records 
-  filtered.data<-filtered.data[!duplicated(filtered.data[,c("Genus","Spp","Longitude","Latitude","Date","Basis_of_Record","Elevation","Catalog_number","Country_ISOcode")]),] 
+  filtered.data <- filtered.data[!duplicated(filtered.data[,c("Genus","Spp","Longitude","Latitude","Date","Basis_of_Record","Elevation","Catalog_number","Country_ISOcode")]),] 
     
   # 5. Remove records outside natural distribution of the genera 
     # a. Add level-3 TDWG code to merged.dataset for future comparation with the checklist created in Step-A-5
       # ii. Load the world shapefile and select the projection       
-      path.level3 <- "C:/Users/Usuario/Documents/input/wgsrpd-master/level3"
-	    # If using iOS the path will be written as this.
-      # path.level3 <- "/Users/Usuario/Documents/input/wgsrpd-master/level3"
-	  
-      library(rgdal)
-      shape.level3TDWG <- readOGR(dsn = path.level3, layer = "level3")
-      library(raster)
-      projection(shape.level3TDWG) <- crs("+proj=longlat +datum=WGS84") 
+     
+      # using the library sf
+      # using the library raster
+  
+      shape.level3TDWG <- st_read("/vsicurl/https://github.com/tdwg/wgsrpd/raw/master/level3/level3.shp")
+      shape.level3TDWG <- as(shape.level3TDWG[,"LEVEL3_COD"], "Spatial")
     
       # iii. Extract level-3 TDWG code for the occurrences
       # Convert your dataset (filtered.data) to spatial object and select the projection
@@ -316,7 +411,7 @@
       projection(filtered.data.spatial) <- crs("+proj=longlat +datum=WGS84")
      
       # Extract all values of shape.level3TDWG for each record in your dataset (filtered.data)
-      values.shape <- extract(shape.level3TDWG,filtered.data.spatial) # If a warning may appear, it does not affect the result. See Note 13 in the manuscript
+      values.shape <- raster::extract(shape.level3TDWG,filtered.data.spatial) # If a warning may appear, it does not affect the result. See Note 13 in the manuscript
         
       # Replace the values extracted in line 319 to the level-3 TDWG codes and convert the spatial object into a dataframe
       Country_TDWGcode <- as.character(values.shape$LEVEL3_COD)
@@ -425,9 +520,12 @@
   # Create the folder
   dir.create(path.thin)
     
-    # a. Thinning process for all sample units. Note this step may take some time and the number of cvs files obtained must be the same as the number of sample units (see Note 15 in the manuscript)
-    # In this thinning we apply a buffer of 10 km (thin.par=10), but you may need to modify this buffer and adapt it to your geographical scale
-    library(spThin)
+    # a. Thinning process for all sample units. Note 
+  # CAUTION: Please be aware that this step consumes a significant amount of memory and may fail if the available memory is low.
+  # Additionally, it can take a substantial amount of time to complete. Ensure that the number of CSV files obtained matches the number of sample units (refer to Note 15 in the manuscript).
+  
+  # In this thinning we apply a buffer of 10 km (thin.par=10), but you may need to modify this buffer and adapt it to your geographical scale
+  # using the library spThin
     lapply(1:n.taxon.downloaded,function(x){
       df.taxa<-split.thin[[x]]
       thin(df.taxa,lat.col = "Latitude",long.col = "Longitude",thin.par = 10,reps = 1,#replace 10 in thin.par=10 by the kms you want to apply as buffer
@@ -442,7 +540,7 @@
     # If you are in case 1, you need to adapt the buffer to your geographical scale (see manuscript step-J).
     # If you are in case 2, you need to increase the buffer in relation to the one you used in step J-1-a (see manuscript step-J).
     # 
-	# library(spThin)
+	# using the library spThin
     # x=1 # Replace "1" by the number of the position of the taxa in n.taxon.downloaded
     # df.taxa<-split.thin[[x]]
     # thin(df.taxa,lat.col = "Latitude",long.col = "Longitude",thin.par = 10,reps = 1,#replace 10 in thin.par=10 by the kms you want to apply as buffer
@@ -481,7 +579,7 @@
     filtered.dataset.WCSP[nms2] <- lapply(filtered.dataset.WCSP[nms2], as.character) 
       
     # Join datasets
-    library(data.table)
+    # using the library data.table
     dt1 <- data.table(thin.occ)
     dt2 <- data.table(filtered.dataset.WCSP)
     setkey(dt1,Genus,Longitude,Latitude) # If your sample unit is species, then replaced $Genus by $Spp 
@@ -507,7 +605,7 @@
     # filtered.dataset.WCSP[nms2] <- lapply(filtered.dataset.WCSP[nms2], as.character) 
     # 
     # # Join datasets
-    # library(data.table)
+    # using the library data.table
     # dt1 <- data.table(thin.taxon)
     # dt2 <- data.table(filtered.dataset.WCSP)
     # setkey(dt1,Genus,Longitude,Latitude) # If your sample unit is species, then replaced $Genus by $Spp 
@@ -536,21 +634,21 @@
     # a. Download variables in: https://www.worldclim.org/data/worldclim21.html. Unzip the file in "input" folder and rename "Bioclimatic _variables_WC2'
     # b. Rename bioclimatic variables 1 to 9 (see manuscript K-a)
     # c. Import climatic variables from Alternative 1 of 30 seconds resolution
-    path.clim <- "C:/Users/User/Documents/input/Bioclimatic _variables_WC2/"
+    # path.clim <- "C:/Users/User/Documents/input/Bioclimatic _variables_WC2/"
 	  # If using iOS the path will be written as this (uncomment line 541):
     # path.clim <- "/Users/User/Documents/input/Bioclimatic _variables_WC2/"
-	  files.clim <- list.files(path.clim,pattern="*.tif", full.names = TRUE) # Check that there are 19 files
-    library(raster) 
-    bioclim <- stack(files.clim) # this makes a list of all the .tif files, then calls raster() on them, then stacks them together
-    names(bioclim) <- gsub("wc2.1_30s_", "", names(bioclim)) # Remove "wc2.1_30s_" from bioclimatic names
-    names(bioclim) <- gsub("_", "", names(bioclim)) # Remove "_" from bioclimatic names
-    names(bioclim) <- gsub(".tif", "", names(bioclim))# Remove ".tif" from bioclimatic names
-    projection(bioclim) <- crs("+proj=longlat +datum=WGS84") # Select WGS84 projection
+    # 	  files.clim <- list.files(path.clim,pattern="*.tif", full.names = TRUE) # Check that there are 19 files
+    #     using the library raster
+    #     bioclim <- stack(files.clim) # this makes a list of all the .tif files, then calls raster() on them, then stacks them together
+    #     names(bioclim) <- gsub("wc2.1_30s_", "", names(bioclim)) # Remove "wc2.1_30s_" from bioclimatic names
+    #     names(bioclim) <- gsub("_", "", names(bioclim)) # Remove "_" from bioclimatic names
+    #     names(bioclim) <- gsub(".tif", "", names(bioclim))# Remove ".tif" from bioclimatic names
+    #     projection(bioclim) <- crs("+proj=longlat +datum=WGS84") # Select WGS84 projection
     
-  # b. Alternative 2: Download variables in R for 10, 5 or 2.5 minutes
-  # this alternative is commented because we selected two decimals for coordinate precision in step H-3 and thus the resolution available in this alternative is lower 
-  # bioclim <- getData("worldclim",var="bio",res=10)
-  # projection(bioclim) <- crs("+proj=longlat +datum=WGS84") 
+  # b. Alternative 2: Download variables in R for 10, 5 or 2.5 minutes.
+  # If using Alternative 1. Skip lines 637 and 638 of this code and got to STEP L.
+  bioclim <- getData("worldclim",var="bio",res=10)
+  projection(bioclim) <- crs("+proj=longlat +datum=WGS84")
     
 #### L.  SPATIAL CORRECTION FOR TERRESTRIAL ORGANISMS####
   #  This step is to identify if there are occurrences in the "joined.dataset" that fall in the sea
@@ -567,12 +665,12 @@
     
   # Plot of bioclimatic variable 1
   # We assume that all bioclimatic variables have the same geographical boundaries, so we only use variable 1 to make the comparison.
-  # pdf(file=paste0(path.output,"7_total_points.pdf"), width = 8,height = 8)
+  pdf(file=paste0(path.output,"7_total_points.pdf"), width = 8,height = 8)
   plot(bioclim[[1]],col=colfunc(10),legend = FALSE)
     
   # Plot all the occurrences of the joined.dataset
   points(joined.dataset$Longitude, joined.dataset$Latitude, pch = 21, cex= 0.8, col= "black", bg="blue") 
-  # dev.off()
+  dev.off()
     
   # 2. Convert joined.dataset into spatial object
   # New columns for corrected coordinates
@@ -590,7 +688,7 @@
     
   # 3. Check if all joined.dataset.spatial points are within the boundaries of the bioclimatic variable layers
   # Extract climatic data for all occurrences of joined.dataset.spatial, the NAs correspond to the occurrences outside the boundaries of the layer.
-  vals <- extract(bioclim[[1]], joined.dataset.spatial,na.rm=TRUE) 
+  vals <- raster::extract(bioclim[[1]], joined.dataset.spatial,na.rm=TRUE) 
     
   # Logical vector that if TRUE there is a NA
   outside_mask <- is.na(vals)
@@ -607,10 +705,10 @@
   # Plot occurrences outside layer limits (NA values) and save
   # If you want to extract these maps, uncomment lines 610 and 613
   # If occurrences outside limits are not obtained, go to step M-1. See Note 20 in the manuscript
-  # pdf(file=paste0(path.output,"7_points_outside.pdf"), width = 8,height = 8) 
+  pdf(file=paste0(path.output,"7_points_outside.pdf"), width = 8,height = 8) 
   plot(bioclim[[1]],col=colfunc(10),legend = FALSE,  main="Ocurrences outside limits")
   points(outside_pts, pch = 21, col= "black", bg="red", cex = 1)
-  # dev.off()
+  dev.off()
     
   # 4. Coordinates correction
   # This loop calculates the climatic cell closest to the point and corrects the coordinates, using "dist" as reference. 
@@ -622,7 +720,7 @@
     newcoord <- coordinates(joined.dataset[,c("LongitudeCorrected","LatitudeCorrected")])
       
     # Extract climatic data of variable 1 for all occurrences 
-    newvals <- extract(bioclim[[1]], newcoord)
+    newvals <- raster::extract(bioclim[[1]], newcoord)
       
     # Extract records with NA values (occurrences outside limits)
     newoutside_mask <- is.na(newvals)
@@ -666,7 +764,7 @@
   projection(joined.dataset) <- crs("+proj=longlat +datum=WGS84") # Select WGS84 projection
     
   # 2. Extract climatic values
-  bioclim.values <- extract(bioclim,joined.dataset, method="bilinear") 
+  bioclim.values <- raster::extract(bioclim,joined.dataset, method="bilinear") 
   # If your dataset is large (high number of occurrences and/or high number of sample units, this step may take time
   # then consider replace method="bilinear" buy method="simple". See Note 21 in the manuscript
   
